@@ -1,3 +1,3 @@
-LOG_FILE = '/data/pilog.log'
+LOG_FILE = '/data/dronelog.log'
 DIR = '/data/'
 
