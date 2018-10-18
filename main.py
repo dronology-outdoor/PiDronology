@@ -1,3 +1,4 @@
+import pixhawk
 import time 
 from os import listdir
 from simple_settings import settings
@@ -14,5 +15,6 @@ b=listdir('./')
 print(a,b)
 
 while (1):
-	print ("Boo")
+	print ("drones")
 	time.sleep(1)
+#pixhawk.hello()
