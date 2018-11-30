@@ -1,23 +1,28 @@
-import pixhawk
-import time 
+import time
 from os import listdir
+import pixhawk
+import dronekit
 from simple_settings import settings
 
-print (settings.LOG_FILE)
-print (settings.DIR)
-f=open(settings.LOG_FILE,'w')
+print("HERE")
+print(settings.LOG_FILE)
+print(settings.DIR)
+f = open(settings.LOG_FILE, 'w')
 f.write("Hello Cats\n")
 f.close()
 
-a=listdir(settings.DIR)
-print("HERE")
-b=listdir('./')
-print(a,b)
+print("drones")
+time.sleep(1)
+pixhawk.hello()
+port = pixhawk.find_devices()
+device=port[1]['pixhawks'][0][0]
+print(device)
+drone = pixhawk.connect(device)
+print(str(drone.mode))
 
-while (1):
-	print ("drones")
-	time.sleep(1)
-#pixhawk.hello()
-#port=pixhawk.find_Devices()
-#drone=pixhawk.connect(port)
-#data=pixhawk.get_aircraft_data(drone)
+for i in range(100):
+    data=pixhawk.get_aircraft_data(drone)
+    print(data[0])
+    print(data[1:])
+
+drone.close()

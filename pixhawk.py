@@ -1,18 +1,18 @@
 """ Shared tool functions for interacting with the vehicle"""
 import os
-import sys
+import subprocess
 import time
-from dronekit import connect
-import datetime
-import serial
+import dronekit
 
 def hello():
 	print("fred")
 
 def connect(device):
+    print("Well?")
     try:
-        vv = connect(device, wait_ready=True, baud=57600)
-        return (vv,0)
+        vv = dronekit.connect(device, wait_ready=True, baud=57600)
+        time.sleep(1)
+        return (vv)
     except Exception as e:
         return (e)
 
@@ -36,7 +36,7 @@ def get_aircraft_data(aVehicle):
     level = bat_stats[2].split("=")[-1]
 
     id = time.time()
-    return [lat,long,alt,air_spd,mode,fix,count,voltage,current,level,id]
+    return ["lat,long,alt,air_spd,mode,fix,count,voltage,current,level,id",lat,long,alt,air_spd,mode,fix,count,voltage,current,level,id]
 
 #vv=connect('/dev/ttyUSB0')
 #get_aircraft_data(vv)
@@ -51,9 +51,7 @@ def find_devices():
     ids = {"2": "A", "4": "B", "3": "C", "5": "D"}
     k30_product_id = "ea60"
     imet_product_id = "6015"
-    # TODO get actual Pixhawk product ID and add to search
-    #TODO new means of identifying I2C CO2meters
-    pixhawk_product_id = "BEEF"
+    pixhawk_product_id = "6001"
     devices = {"k30s": [], "imets": [], "pixhawks": []}
     ports = []
 
@@ -62,7 +60,6 @@ def find_devices():
     for d in devs:
         if "ttyUSB" in d:
             ports.append("/dev/" + d)
-
     # Search for each product id
     for p in ports:
         po = subprocess.Popen('/sbin/udevadm info -a  --name={}'.format(p), stdout=subprocess.PIPE, shell=True)
@@ -72,7 +69,9 @@ def find_devices():
 
         if po_status == 0:
             if 'ATTRS{{idProduct}}=="{}"'.format(k30_product_id) in output:
-                po = subprocess.Popen('/sbin/udevadm info -a  --name={} | /bin/grep \'KERNELS=="1.\''.format(p),
+                #Switch on laptop vs resinOS.  5- is laptop
+                po = subprocess.Popen('/sbin/udevadm info -a  --name={} | /bin/grep \'KERNELS=="5-\''.format(p),
+                # po = subprocess.Popen('/sbin/udevadm info -a  --name={} | /bin/grep \'KERNELS=="1-1.\''.format(p),
                                       stdout=subprocess.PIPE, shell=True)
                 (output, err) = po.communicate()
                 po.wait()
@@ -89,7 +88,9 @@ def find_devices():
                 devices["k30s"].append((p, port_id))
 
             elif 'ATTRS{{idProduct}}=="{}"'.format(imet_product_id) in output:
-                po = subprocess.Popen('/sbin/udevadm info -a  --name={} | /bin/grep \'KERNELS=="1.\''.format(p),
+                #Switch on laptop vs resinOS.  5- is laptop
+                po = subprocess.Popen('/sbin/udevadm info -a  --name={} | /bin/grep \'KERNELS=="5-\''.format(p),
+                # po = subprocess.Popen('/sbin/udevadm info -a  --name={} | /bin/grep \'KERNELS=="1-1.\''.format(p),
                                       stdout=subprocess.PIPE, shell=True)
                 (output, err) = po.communicate()
                 po.wait()
@@ -98,34 +99,35 @@ def find_devices():
                 try:
                     port_id = ids[str(output).split("\\n")[1][-2:-1]]
                 except KeyError as e:
-                    sho_logger.error("KeyError raised: {}".format(str(e)))
+                    # sho_logger.error("KeyError raised: {}".format(str(e)))
                     port_id = "X"
                 except IndexError as e:
-                    sho_logger.error("IndexError raised: {}".format(str(e)))
+                    # sho_logger.error("IndexError raised: {}".format(str(e)))
                     port_id = "X"
                 devices["imets"].append((p, port_id))
 
             elif 'ATTRS{{idProduct}}=="{}"'.format(pixhawk_product_id) in output:
-                po = subprocess.Popen('/sbin/udevadm info -a  --name={} | /bin/grep \'KERNELS=="1.\''.format(p),
+                #Switch on laptop vs resinOS.  5- is laptop
+                po = subprocess.Popen('/sbin/udevadm info -a  --name={} | /bin/grep \'KERNELS=="5-\''.format(p),
+                # po = subprocess.Popen('/sbin/udevadm info -a  --name={} | /bin/grep \'KERNELS=="1-1.\''.format(p),
                                       stdout=subprocess.PIPE, shell=True)
                 (output, err) = po.communicate()
                 po.wait()
 
                 # Pulls kernel identification of usb port from response
                 try:
-                    port_id = ids[str(output).split("\\n")[1][-2:-1]]
+                     port_id = ids[str(output).split("\\n")[1][-2:-1]]
                 except KeyError as e:
-                    sho_logger.error("KeyError raised: {}".format(str(e)))
-                    port_id = "X"
+                     # sho_logger.error("KeyError raised: {}".format(str(e)))
+                     port_id = "X"
                 except IndexError as e:
-                    sho_logger.error("IndexError raised: {}".format(str(e)))
-                    port_id = "X"
+                     # sho_logger.error("IndexError raised: {}".format(str(e)))
+                     port_id = "X"
                 devices["pixhawks"].append((p, port_id))
 
         else:
-            sho_logger.error("Error, couldn't get udev information about ports")
-            sho_logger.info("{}".format(output.decode("utf-8")))
-            sho_logger.error(str(err))
+            # sho_logger.error("Error, couldn't get udev information about ports")
+            # sho_logger.info("{}".format(output.decode("utf-8")))
+            # sho_logger.error(str(err))
             return -1
-    sho_logger.info("Devices found: {}".format(devices))
     return 0, devices
