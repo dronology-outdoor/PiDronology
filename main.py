@@ -8,7 +8,7 @@ print("HERE")
 print(settings.LOG_FILE)
 print(settings.DIR)
 f = open(settings.LOG_FILE, 'w')
-f.write("Hello Cats\n")
+f.write("Hello Frogs\n")
 f.close()
 
 print("drones")
