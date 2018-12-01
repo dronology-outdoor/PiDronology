@@ -20,7 +20,7 @@ print(device)
 drone = pixhawk.connect(device)
 print(str(drone.mode))
 
-while(1)
+while(1):
     data=pixhawk.get_aircraft_data(drone)
     print(data[0])
     print(data[1:])
