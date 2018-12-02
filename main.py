@@ -16,6 +16,9 @@ if port == -1:
     print("Failed to find Pixhawk")
     f.write("Failed to find Pixhawk")
     f.close()
+    while(1):
+        print("waiting")
+        time.sleep(10)
     exit(-1)
 f.close()
 
