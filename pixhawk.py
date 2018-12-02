@@ -4,11 +4,7 @@ import subprocess
 import time
 import dronekit
 
-def hello():
-	print("fred")
-
 def connect(device):
-    print("Well?")
     try:
         vv = dronekit.connect(device, wait_ready=True, baud=57600)
         time.sleep(1)
@@ -60,74 +56,78 @@ def find_devices():
     for d in devs:
         if "ttyUSB" in d:
             ports.append("/dev/" + d)
-    # Search for each product id
-    for p in ports:
-        po = subprocess.Popen('/sbin/udevadm info -a  --name={}'.format(p), stdout=subprocess.PIPE, shell=True)
-        (output, err) = po.communicate()
-        po_status = po.wait()
-        output = str(output)
+    if len(ports) == 0:
+        return -1
 
-        if po_status == 0:
-            if 'ATTRS{{idProduct}}=="{}"'.format(k30_product_id) in output:
-                #Switch on laptop vs resinOS.  5- is laptop
-                po = subprocess.Popen('/sbin/udevadm info -a  --name={} | /bin/grep \'KERNELS=="5-\''.format(p),
-                # po = subprocess.Popen('/sbin/udevadm info -a  --name={} | /bin/grep \'KERNELS=="1-1.\''.format(p),
-                                      stdout=subprocess.PIPE, shell=True)
-                (output, err) = po.communicate()
-                po.wait()
+    else:
+        # Search for each product id
+        for p in ports:
+            po = subprocess.Popen('/sbin/udevadm info -a  --name={}'.format(p), stdout=subprocess.PIPE, shell=True)
+            (output, err) = po.communicate()
+            po_status = po.wait()
+            output = str(output)
 
-                # Pulls kernel identification of usb port from response
-                try:
-                    port_id = ids[str(output).split("\\n")[1][-2:-1]]
-                except KeyError as e:
-                    sho_logger.error("KeyError raised: {}".format(str(e)))
-                    port_id = "X"
-                except IndexError as e:
-                    sho_logger.error("IndexError raised: {}".format(str(e)))
-                    port_id = "X"
-                devices["k30s"].append((p, port_id))
+            if po_status == 0:
+                if 'ATTRS{{idProduct}}=="{}"'.format(k30_product_id) in output:
+                    #Switch on laptop vs resinOS.  5- is laptop
+                    po = subprocess.Popen('/sbin/udevadm info -a  --name={} | /bin/grep \'KERNELS=="5-\''.format(p),
+                                          # po = subprocess.Popen('/sbin/udevadm info -a  --name={} | /bin/grep \'KERNELS=="1-1.\''.format(p),
+                                          stdout=subprocess.PIPE, shell=True)
+                    (output, err) = po.communicate()
+                    po.wait()
 
-            elif 'ATTRS{{idProduct}}=="{}"'.format(imet_product_id) in output:
-                #Switch on laptop vs resinOS.  5- is laptop
-                po = subprocess.Popen('/sbin/udevadm info -a  --name={} | /bin/grep \'KERNELS=="5-\''.format(p),
-                # po = subprocess.Popen('/sbin/udevadm info -a  --name={} | /bin/grep \'KERNELS=="1-1.\''.format(p),
-                                      stdout=subprocess.PIPE, shell=True)
-                (output, err) = po.communicate()
-                po.wait()
+                    # Pulls kernel identification of usb port from response
+                    try:
+                        port_id = ids[str(output).split("\\n")[1][-2:-1]]
+                    except KeyError as e:
+                        sho_logger.error("KeyError raised: {}".format(str(e)))
+                        port_id = "X"
+                    except IndexError as e:
+                        sho_logger.error("IndexError raised: {}".format(str(e)))
+                        port_id = "X"
+                    devices["k30s"].append((p, port_id))
 
-                # Pulls kernel identification of usb port from response
-                try:
-                    port_id = ids[str(output).split("\\n")[1][-2:-1]]
-                except KeyError as e:
-                    # sho_logger.error("KeyError raised: {}".format(str(e)))
-                    port_id = "X"
-                except IndexError as e:
-                    # sho_logger.error("IndexError raised: {}".format(str(e)))
-                    port_id = "X"
-                devices["imets"].append((p, port_id))
+                elif 'ATTRS{{idProduct}}=="{}"'.format(imet_product_id) in output:
+                    #Switch on laptop vs resinOS.  5- is laptop
+                    po = subprocess.Popen('/sbin/udevadm info -a  --name={} | /bin/grep \'KERNELS=="5-\''.format(p),
+                                          # po = subprocess.Popen('/sbin/udevadm info -a  --name={} | /bin/grep \'KERNELS=="1-1.\''.format(p),
+                                          stdout=subprocess.PIPE, shell=True)
+                    (output, err) = po.communicate()
+                    po.wait()
 
-            elif 'ATTRS{{idProduct}}=="{}"'.format(pixhawk_product_id) in output:
-                #Switch on laptop vs resinOS.  5- is laptop
-                po = subprocess.Popen('/sbin/udevadm info -a  --name={} | /bin/grep \'KERNELS=="5-\''.format(p),
-                # po = subprocess.Popen('/sbin/udevadm info -a  --name={} | /bin/grep \'KERNELS=="1-1.\''.format(p),
-                                      stdout=subprocess.PIPE, shell=True)
-                (output, err) = po.communicate()
-                po.wait()
+                    # Pulls kernel identification of usb port from response
+                    try:
+                        port_id = ids[str(output).split("\\n")[1][-2:-1]]
+                    except KeyError as e:
+                        # sho_logger.error("KeyError raised: {}".format(str(e)))
+                        port_id = "X"
+                    except IndexError as e:
+                        # sho_logger.error("IndexError raised: {}".format(str(e)))
+                        port_id = "X"
+                    devices["imets"].append((p, port_id))
 
-                # Pulls kernel identification of usb port from response
-                try:
-                     port_id = ids[str(output).split("\\n")[1][-2:-1]]
-                except KeyError as e:
-                     # sho_logger.error("KeyError raised: {}".format(str(e)))
-                     port_id = "X"
-                except IndexError as e:
-                     # sho_logger.error("IndexError raised: {}".format(str(e)))
-                     port_id = "X"
-                devices["pixhawks"].append((p, port_id))
+                elif 'ATTRS{{idProduct}}=="{}"'.format(pixhawk_product_id) in output:
+                    #Switch on laptop vs resinOS.  5- is laptop
+                    po = subprocess.Popen('/sbin/udevadm info -a  --name={} | /bin/grep \'KERNELS=="5-\''.format(p),
+                                          # po = subprocess.Popen('/sbin/udevadm info -a  --name={} | /bin/grep \'KERNELS=="1-1.\''.format(p),
+                                          stdout=subprocess.PIPE, shell=True)
+                    (output, err) = po.communicate()
+                    po.wait()
 
-        else:
-            # sho_logger.error("Error, couldn't get udev information about ports")
-            # sho_logger.info("{}".format(output.decode("utf-8")))
-            # sho_logger.error(str(err))
-            return -1
-    return 0, devices
+                    # Pulls kernel identification of usb port from response
+                    try:
+                        port_id = ids[str(output).split("\\n")[1][-2:-1]]
+                    except KeyError as e:
+                        # sho_logger.error("KeyError raised: {}".format(str(e)))
+                        port_id = "X"
+                    except IndexError as e:
+                        # sho_logger.error("IndexError raised: {}".format(str(e)))
+                        port_id = "X"
+                    devices["pixhawks"].append((p, port_id))
+
+            else:
+                # sho_logger.error("Error, couldn't get udev information about ports")
+                # sho_logger.info("{}".format(output.decode("utf-8")))
+                # sho_logger.error(str(err))
+                return -1
+        return 0, devices
