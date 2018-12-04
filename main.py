@@ -1,4 +1,5 @@
 import time
+import dbus
 from os import listdir
 import pixhawk
 import dronekit
@@ -11,13 +12,14 @@ f = open(settings.LOG_FILE, 'w')
 f.write("# Start of Dronology data log:\n")
 
 time.sleep(1)
+
+#NetworkConfig
+
 port = pixhawk.find_devices()
 if port == -1:
     print("Failed to find Pixhawk")
     f.write("Failed to find Pixhawk")
     f.close()
-    import dbus
-    bus = dbus.SystemBus()
     while(1):
         print("waiting")
         time.sleep(10)
