@@ -4,35 +4,38 @@ import subprocess
 import time
 import dronekit
 
+
 def connect(device):
     try:
         vv = dronekit.connect(device, wait_ready=True, baud=57600)
         time.sleep(1)
-        return (vv)
+        return vv
     except Exception as e:
         return (e)
 
-def get_aircraft_data(aVehicle):
+
+def get_aircraft_data(a_vehicle):
     """Return vehicle attributes in a list"""
     utc = "0:0:0"
-    lat = aVehicle.location.global_frame.lat
-    long = aVehicle.location.global_frame.lon
-    alt = aVehicle.location.global_frame.alt
+    lat = a_vehicle.location.global_frame.lat
+    lon = a_vehicle.location.global_frame.lon
+    alt = a_vehicle.location.global_frame.alt
 
-    air_spd = aVehicle.airspeed
-    mode = str(aVehicle.mode)
-    mode=mode.split(":")[1]
-    gps_stat = str(aVehicle.gps_0)
+    air_spd = a_vehicle.airspeed
+    mode = str(a_vehicle.mode)
+    mode = mode.split(":")[1]
+    gps_stat = str(a_vehicle.gps_0)
     fix = gps_stat.split(":")[1].split(",")[0].split('=')[1]
     count = gps_stat.split(":")[1].split(",")[1].split('=')[1]
 
-    bat_stats = str(aVehicle.battery).split(",")
+    bat_stats = str(a_vehicle.battery).split(",")
     voltage = (bat_stats[0].split("="))[-1]
     current = bat_stats[1].split("=")[-1]
     level = bat_stats[2].split("=")[-1]
 
-    id = time.time()
-    return ["lat,long,alt,air_spd,mode,fix,count,voltage,current,level,id",lat,long,alt,air_spd,mode,fix,count,voltage,current,level,id]
+    ts = time.time()
+    return ["lat,lon,alt,air_spd,mode,fix,count,voltage,current,level,timestamp", lat, lon, alt, air_spd, mode, fix, count,
+            voltage, current, level, ts]
 
 
 def find_devices():
@@ -67,7 +70,7 @@ def find_devices():
 
             if po_status == 0:
                 if 'ATTRS{{idProduct}}=="{}"'.format(k30_product_id) in output:
-                    #Switch on laptop vs resinOS.  5- is laptop
+                    # Switch on laptop vs resinOS.  5- is laptop
                     po = subprocess.Popen('/sbin/udevadm info -a  --name={} | /bin/grep \'KERNELS=="5-\''.format(p),
                                           # po = subprocess.Popen('/sbin/udevadm info -a  --name={} | /bin/grep \'KERNELS=="1-1.\''.format(p),
                                           stdout=subprocess.PIPE, shell=True)
@@ -78,15 +81,15 @@ def find_devices():
                     try:
                         port_id = ids[str(output).split("\\n")[1][-2:-1]]
                     except KeyError as e:
-                        sho_logger.error("KeyError raised: {}".format(str(e)))
+                        # sho_logger.error("KeyError raised: {}".format(str(e)))
                         port_id = "X"
                     except IndexError as e:
-                        sho_logger.error("IndexError raised: {}".format(str(e)))
+                        # sho_logger.error("IndexError raised: {}".format(str(e)))
                         port_id = "X"
                     devices["k30s"].append((p, port_id))
 
                 elif 'ATTRS{{idProduct}}=="{}"'.format(imet_product_id) in output:
-                    #Switch on laptop vs resinOS.  5- is laptop
+                    # Switch on laptop vs resinOS.  5- is laptop
                     po = subprocess.Popen('/sbin/udevadm info -a  --name={} | /bin/grep \'KERNELS=="5-\''.format(p),
                                           # po = subprocess.Popen('/sbin/udevadm info -a  --name={} | /bin/grep \'KERNELS=="1-1.\''.format(p),
                                           stdout=subprocess.PIPE, shell=True)
@@ -105,7 +108,7 @@ def find_devices():
                     devices["imets"].append((p, port_id))
 
                 elif 'ATTRS{{idProduct}}=="{}"'.format(pixhawk_product_id) in output:
-                    #Switch on laptop vs resinOS.  5- is laptop
+                    # Switch on laptop vs resinOS.  5- is laptop
                     po = subprocess.Popen('/sbin/udevadm info -a  --name={} | /bin/grep \'KERNELS=="5-\''.format(p),
                                           # po = subprocess.Popen('/sbin/udevadm info -a  --name={} | /bin/grep \'KERNELS=="1-1.\''.format(p),
                                           stdout=subprocess.PIPE, shell=True)
@@ -130,8 +133,8 @@ def find_devices():
                 return -1
         return 0, devices
 
-#a=find_devices()
-#vv=connect('/dev/ttyUSB0')
-#for a in range(10):
+# a=find_devices()
+# vv=connect('/dev/ttyUSB0')
+# for a in range(10):
 #    get_aircraft_data(vv)
-#vv.close()
+# vv.close()
