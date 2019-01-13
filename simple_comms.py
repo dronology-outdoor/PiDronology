@@ -17,6 +17,5 @@ def recieve(broadcast_ip, port):
     s = socket(AF_INET, SOCK_DGRAM)
     s.bind((broadcast_ip, port))
     m = s.recvfrom(1024)
-    print (m[0])
     s.close()
     return m
