@@ -1,37 +1,41 @@
 import time
-import dbus
 from os import listdir
 import pixhawk
 import dronekit
+import simple_comms as comms
 from simple_settings import settings
 
+#TODO configure proper onboard logging
 print("Onboard Dronology starting")
 print("Log file: {}".format(settings.LOG_FILE))
 
-f = open(settings.LOG_FILE, 'w')
-f.write("# Start of Dronology data log:\n")
-
 time.sleep(1)
 
-#NetworkConfig
-
+#Look for a pixhawk to send data from
 port = pixhawk.find_devices()
-if port == -1:
-    print("Failed to find Pixhawk")
-    f.write("Failed to find Pixhawk")
-    f.close()
-    while(1):
-        print("waiting")
-        time.sleep(10)
-    exit(-1)
-f.close()
+while (port == -1):
+    print("{}: No pixhawk available.".format(time.ctime()))
 
+    #Until device found alert other drones of status:
+    comms.send(["No pixhawk available"],settings.BROADCAST_IP,settings.PORT)
+    
+    #Wait and look again for a pixhawk
+    time.sleep(settings.PERIOD)
+    port = pixhawk.find_devices()
+
+#Once a pixhawk is found connect to it:
 device=port[1]['pixhawks'][0][0]
 print("Pixhawk found on: {}".format(device))
 drone = pixhawk.connect(device)
 
+
+#Get data from pixhawk and broadcast to others on adhoc network
 while(1):
     data=pixhawk.get_aircraft_data(drone)
+    print(time.ctime())
     print(data[0])
     print(data[1:])
+    comms.send(data,settings.BROADCAST_IP,settings.PORT)
+    time.sleep(settings.PERIOD)
+
 

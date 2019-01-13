@@ -34,8 +34,6 @@ def get_aircraft_data(aVehicle):
     id = time.time()
     return ["lat,long,alt,air_spd,mode,fix,count,voltage,current,level,id",lat,long,alt,air_spd,mode,fix,count,voltage,current,level,id]
 
-#vv=connect('/dev/ttyUSB0')
-#get_aircraft_data(vv)
 
 def find_devices():
     """
@@ -131,3 +129,9 @@ def find_devices():
                 # sho_logger.error(str(err))
                 return -1
         return 0, devices
+
+#a=find_devices()
+#vv=connect('/dev/ttyUSB0')
+#for a in range(10):
+#    get_aircraft_data(vv)
+#vv.close()
